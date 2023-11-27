@@ -32,14 +32,15 @@ def read_csv(file_path):
                     keys.append(key)
                     
                     averages = [np.mean(inner_list) for inner_list in bins]
-                    errors = [np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in bins]
+                    #use 95% confidence interval
+                    errors = [1.96*np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in bins]
 
                     entry = [dbuff2, var2, averages, errors]
                     data_list.append(entry)
                 else:
                     first_row = False
                     keys.append(key)
-                bins = [[] for _ in range(100)]
+                bins = [[] for _ in range(len(row[1:]))]
             
             # Extract values from the rest of the row
             values = [float(value) for value in row[1:]]
@@ -58,7 +59,7 @@ def read_csv(file_path):
             is_last_row = row_num == total_rows
             if is_last_row:
                 averages = [np.mean(inner_list) for inner_list in bins]
-                errors = [np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in bins]
+                errors = [1.96*np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in bins]
 
                 entry = [dbuff, var, averages, errors]
                 data_list.append(entry)
