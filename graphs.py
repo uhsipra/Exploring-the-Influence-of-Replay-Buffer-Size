@@ -1,23 +1,81 @@
 import csv
 import matplotlib.pyplot as plt
+import numpy as np
+import warnings
 
-def read_csv(file_path):
+# values that can/should be changed
+file_path = "results5.csv"
+bin_size = 250
+
+def read_csv(file_path, bin_size):
+    keys = []   # each variation of dbuff/var is a key
+    bins = []
     data_list = []
+    first_row = True
+    
     with open(file_path, newline='') as csvfile:
         csv_reader = csv.reader(csvfile)
-        for row in csv_reader:
+        total_rows = sum(1 for _ in csv_reader)  # Count total rows
+        
+        # Reset reader to the beginning
+        csvfile.seek(0)
+        
+        for row_num, row in enumerate(csv_reader, start=1):
             # Convert dbuff and var to integers
-            dbuff, var = map(int, row[0].split('/'))
+            dbuff, var = map(float, row[0].split('/'))
+            
+            key = (dbuff, var)
+            if key not in keys:
+                if not first_row:
+                    dbuff2, var2 = keys[-1]
+                    keys.append(key)
+                    
+                    averages = [np.mean(inner_list) for inner_list in bins]
+                    
+                    # Suppress runtime warnings
+                    warnings.filterwarnings("ignore", category=RuntimeWarning)
+                    errors = [np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in bins]
+                    errors = [0 if np.isnan(value) else value for value in errors]
+
+                    entry = [dbuff2, var2, averages, errors]
+                    data_list.append(entry)
+
+                    bins = []
+                else:
+                    first_row = False
+                    keys.append(key)
             
             # Extract values from the rest of the row
             values = [int(value) for value in row[1:]]
+            current_sum = 0
+            bin_num = 0
+            for val in values:
+                # Sort bins into list
+                if current_sum + val <= bin_size:
+                    current_sum += val
+                    while len(bins) - 1 < bin_num:
+                        bins.append([])
+                    bins[bin_num].append(val)
+                else:
+                    current_sum = val
+                    bin_num += 1
+                    while len(bins) - 1 < bin_num:
+                        bins.append([])
+                    bins[bin_num].append(val)
             
-            # Create a list with [dbuff, var, values]
-            entry = [dbuff, var, values]
-            
-            # Add the entry to the data_list
-            data_list.append(entry)
-    
+            # Check if the current row is the last row
+            is_last_row = row_num == total_rows
+            if is_last_row:
+                averages = [np.mean(inner_list) for inner_list in bins]
+                    
+                # Suppress runtime warnings
+                warnings.filterwarnings("ignore", category=RuntimeWarning)
+                errors = [np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in bins]
+                errors = [0 if np.isnan(value) else value for value in errors]
+
+                entry = [dbuff, var, averages, errors]
+                data_list.append(entry)
+
     return data_list
 
 def unique_sizes(data_list):
@@ -26,11 +84,11 @@ def unique_sizes(data_list):
     return len(unique_dbuff), len(unique_var)
 
 # Example usage:
-file_path = "results.csv"
-result_list = read_csv(file_path)
+result_list = read_csv(file_path, bin_size)
 
-# Sort result_list based on dbuff and var
-result_list = sorted(result_list, key=lambda x: (x[0], x[1]))
+# IMPORTANT:
+# If you want to swap increasing x-axis and y-axis (dbuff vs var), uncomment line below
+# result_list = sorted(result_list, key=lambda x: (x[0], x[1]))
 
 # Find the unique sizes for dbuff and var
 num_cols, num_rows = unique_sizes(result_list)
@@ -43,9 +101,11 @@ axs_flat = axs.flatten()
 
 # Plot each entry in a subplot
 for i, entry in enumerate(result_list):
-    dbuff, var, values = entry
+    # code for how each plot will be constructed
+    dbuff, var, values, errors = entry
     x_values = range(1, len(values) + 1)
-    axs_flat[i].plot(x_values, values, marker='o', label=f'dbuff={dbuff}, var={var}')
+    axs_flat[i].plot(x_values, values, marker='o', label=f'dbuff={dbuff}, var={var}')   # can change colour by adding (color='gray') to this line
+    axs_flat[i].fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.6, color='gray', label=None)
     axs_flat[i].set_title(f'dbuff={dbuff}, var={var}')
     axs_flat[i].set_xlabel('X-axis')
     axs_flat[i].set_ylabel('Y-axis')
