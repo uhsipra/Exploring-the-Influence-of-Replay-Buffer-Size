@@ -92,6 +92,7 @@ for i, entry in enumerate(result_list):
     axs_flat[i].set_xlabel(f'Time-Steps/Frames (100)')
     axs_flat[i].set_ylabel('Rewards')
     axs_flat[i].legend().set_visible(False)
+    axs_flat[i].set_ylim([0, 200])
 
 # Hide empty subplots if any
 for i in range(len(result_list), len(axs_flat)):
