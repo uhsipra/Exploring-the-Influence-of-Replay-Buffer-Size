@@ -6,6 +6,7 @@ import warnings
 # values that can/should be changed
 file_path = "results.csv"
 bin_size = 250
+png_path = "plot_of_plots.png"
 
 def read_csv(file_path, bin_size):
     keys = []   # each variation of dbuff/var is a key
@@ -21,7 +22,7 @@ def read_csv(file_path, bin_size):
         csvfile.seek(0)
         
         for row_num, row in enumerate(csv_reader, start=1):
-            # Convert dbuff and var to integers
+            # Convert dbuff and var to floats
             dbuff, var = map(float, row[0].split('/'))
             
             key = (dbuff, var)
@@ -117,4 +118,4 @@ for i in range(len(result_list), len(axs_flat)):
 
 # Adjust layout and save the figure to a PNG file
 plt.tight_layout()
-plt.savefig("plot_of_plots.png", bbox_inches='tight')
+plt.savefig(png_path, bbox_inches='tight')
