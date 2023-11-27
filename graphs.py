@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # values that can/should be changed
-file_path = "results4.csv"
+file_path = "results.csv"
 png_path = "plot_of_plots.png"
 
 def read_csv(file_path):
@@ -41,7 +41,7 @@ def read_csv(file_path):
                     keys.append(key)
             
             # Extract values from the rest of the row
-            values = [int(value) for value in row[1:]]
+            values = [float(value) for value in row[1:]]
             bin_num = 0
             for val in values:
                 # Sort bins into list
