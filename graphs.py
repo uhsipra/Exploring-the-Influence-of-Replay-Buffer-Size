@@ -4,13 +4,12 @@ import numpy as np
 import warnings
 
 # values that can/should be changed
-file_path = "results.csv"
-bin_size = 250
+file_path = "results4.csv"
 png_path = "plot_of_plots.png"
 
-def read_csv(file_path, bin_size):
+def read_csv(file_path):
     keys = []   # each variation of dbuff/var is a key
-    bins = []
+    bins = [[] for _ in range(100)]   # not to be confused with data binning, just a list to collect 100 data points across all of the same dbuff/var rows in a 2d grid
     data_list = []
     first_row = True
     
@@ -41,28 +40,18 @@ def read_csv(file_path, bin_size):
                     entry = [dbuff2, var2, averages, errors]
                     data_list.append(entry)
 
-                    bins = []
+                    bins = [[] for _ in range(100)]
                 else:
                     first_row = False
                     keys.append(key)
             
             # Extract values from the rest of the row
             values = [int(value) for value in row[1:]]
-            current_sum = 0
             bin_num = 0
             for val in values:
                 # Sort bins into list
-                if current_sum + val <= bin_size:
-                    current_sum += val
-                    while len(bins) - 1 < bin_num:
-                        bins.append([])
-                    bins[bin_num].append(val)
-                else:
-                    current_sum = val
-                    bin_num += 1
-                    while len(bins) - 1 < bin_num:
-                        bins.append([])
-                    bins[bin_num].append(val)
+                bins[bin_num].append(val)
+                bin_num += 1
             
             # Check if the current row is the last row
             is_last_row = row_num == total_rows
@@ -85,8 +74,9 @@ def unique_sizes(data_list):
     return len(unique_dbuff), len(unique_var)
 
 # Example usage:
-result_list = read_csv(file_path, bin_size)
-
+result_list = read_csv(file_path)
+for i in result_list:
+    print(i)
 # IMPORTANT:
 # If you want to swap increasing x-axis and y-axis (dbuff vs var), uncomment line below
 # result_list = sorted(result_list, key=lambda x: (x[0], x[1]))
@@ -108,7 +98,7 @@ for i, entry in enumerate(result_list):
     axs_flat[i].plot(x_values, values, marker='o', label=f'dbuff={dbuff}, var={var}')   # can change colour by adding (color='gray') to this line
     axs_flat[i].fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.6, color='gray', label=None)
     axs_flat[i].set_title(f'dbuff={dbuff}, var={var}')
-    axs_flat[i].set_xlabel(f'Episodes (Bin Size = {bin_size})')
+    axs_flat[i].set_xlabel(f'Time-Steps/Frames (100)')
     axs_flat[i].set_ylabel('Rewards')
     axs_flat[i].legend().set_visible(False)
 
