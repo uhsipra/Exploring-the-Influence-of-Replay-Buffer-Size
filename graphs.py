@@ -1,7 +1,6 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
-import warnings
 
 # values that can/should be changed
 file_path = "results4.csv"
@@ -31,11 +30,7 @@ def read_csv(file_path):
                     keys.append(key)
                     
                     averages = [np.mean(inner_list) for inner_list in bins]
-                    
-                    # Suppress runtime warnings
-                    warnings.filterwarnings("ignore", category=RuntimeWarning)
                     errors = [np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in bins]
-                    errors = [0 if np.isnan(value) else value for value in errors]
 
                     entry = [dbuff2, var2, averages, errors]
                     data_list.append(entry)
@@ -57,11 +52,7 @@ def read_csv(file_path):
             is_last_row = row_num == total_rows
             if is_last_row:
                 averages = [np.mean(inner_list) for inner_list in bins]
-                    
-                # Suppress runtime warnings
-                warnings.filterwarnings("ignore", category=RuntimeWarning)
                 errors = [np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in bins]
-                errors = [0 if np.isnan(value) else value for value in errors]
 
                 entry = [dbuff, var, averages, errors]
                 data_list.append(entry)
