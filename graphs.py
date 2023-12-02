@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # values that can/should be changed
-file_path = "LunarLander-v2-seed11-batch64.csv"
+file_path = "CartPole-v1-seed11-batch128.csv"
 png_path = "plot_of_plots.png"
 
 def read_csv(file_path):
@@ -86,24 +86,34 @@ num_cols, num_rows = unique_sizes(result_list)
 fig, axs = plt.subplots(num_rows, num_cols, figsize=(4 * num_cols, 4 * num_rows), constrained_layout=True)
 
 # Flatten the axs array for easier indexing
-axs_flat = axs.flatten()
-
-# Plot each entry in a subplot
-for i, entry in enumerate(result_list):
-    # code for how each plot will be constructed
-    dbuff, var, values, errors = entry
-    x_values = range(1, len(values) + 1)
-    axs_flat[i].plot(x_values, values, marker='o', label=f'dbuff={dbuff}, var={var}')   # can change colour by adding (color='gray') to this line
-    axs_flat[i].fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.6, color='gray', label=None)
-    axs_flat[i].set_title(f'dbuff={dbuff}, var={var}')
-    axs_flat[i].set_xlabel(f'Time-Steps/Frames (100)')
-    axs_flat[i].set_ylabel('Rewards')
-    axs_flat[i].legend().set_visible(False)
-    axs_flat[i].set_ylim([min_bound, max_bound])
-
-# Hide empty subplots if any
-for i in range(len(result_list), len(axs_flat)):
-    axs_flat[i].axis('off')
+if type(axs) == np.ndarray:
+    axs_flat = axs.flatten()
+    # Plot each entry in a subplot
+    for i, entry in enumerate(result_list):
+        # code for how each plot will be constructed
+        dbuff, var, values, errors = entry
+        x_values = range(1, len(values)*200 + 1, 200)
+        axs_flat[i].plot(x_values, values, marker='o', label=f'dbuff={dbuff}, var={var}')   # can change colour by adding (color='gray') to this line
+        axs_flat[i].fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.6, color='gray', label=None)
+        axs_flat[i].set_title(f'dbuff={dbuff}, var={var}')
+        axs_flat[i].set_xlabel(f'Time-Steps')
+        axs_flat[i].set_ylabel('Rewards')
+        axs_flat[i].legend().set_visible(False)
+        axs_flat[i].set_ylim([min_bound, max_bound])
+    # Hide empty subplots if any
+    for i in range(len(result_list), len(axs_flat)):
+        axs_flat[i].axis('off')
+else:
+    axs_flat = axs
+    dbuff, var, values, errors = result_list[0]
+    x_values = range(1, len(values)*200 + 1, 200)
+    axs_flat.plot(x_values, values, marker='o', label=f'dbuff={dbuff}, var={var}')   # can change colour by adding (color='gray') to this line
+    axs_flat.fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.6, color='gray', label=None)
+    axs_flat.set_title(f'dbuff={dbuff}, var={var}')
+    axs_flat.set_xlabel(f'Time-Steps')
+    axs_flat.set_ylabel('Rewards')
+    axs_flat.legend().set_visible(False)
+    axs_flat.set_ylim([min_bound, max_bound])
 
 # Adjust layout and save the figure to a PNG file
 plt.tight_layout()
