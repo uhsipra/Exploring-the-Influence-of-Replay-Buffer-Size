@@ -10,4 +10,7 @@ The file structure of the artifact is as follow:
 
 ## Step-by-Step Reproduction of Results
 
-
+1. Open Google Colab (https://colab.research.google.com/) and upload `DQN_NSTEP_LunarLander.ipynb` to run in your local Google Drive
+2. Run `DQN_NSTEP_LunarLander.ipynb` on Google Colab, this will require google sign in to store the resulting data in your local Google Drive
+3. Download the results (.csv) found in your google drive
+4. Change the file name at the top of `graphs_individual.py` to the corresponding .csv file and make sure to run the program with the .csv file in the same folder
