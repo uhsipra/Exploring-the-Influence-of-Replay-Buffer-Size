@@ -11,6 +11,7 @@ def read_csv(file_path):
     keys = []   # each variation of dbuff/var is a key
     #bins = [[] for _ in range(100)]   # not to be confused with data binning, just a list to collect 100 data points across all of the same dbuff/var rows in a 2d grid
     data_list = []
+    data = {}
     first_row = True
     max_bound = -np.inf
     min_bound = np.inf
@@ -21,8 +22,6 @@ def read_csv(file_path):
             
             # Reset reader to the beginning
             csvfile.seek(0)
-
-            data = {}
 
             #process rows into dict
             for row_num, row in enumerate(csv_reader, start=1):
@@ -40,15 +39,15 @@ def read_csv(file_path):
                     # Sort bins into list
                     data[row[0]][i].append(val)
 
-            #process stats
-            for key in data:
-                dbuff, var = map(float, key.split('/'))
-                averages = [np.mean(inner_list) for inner_list in data[key]]
-                #use 95% confidence interval
-                errors = [1.96*np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in data[key]]
+    #process stats
+    for key in data:
+        dbuff, var = map(float, key.split('/'))
+        averages = [np.mean(inner_list) for inner_list in data[key]]
+        #use 95% confidence interval
+        errors = [1.96*np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in data[key]]
 
-                entry = [dbuff, var, averages, errors]
-                data_list.append(entry)
+        entry = [dbuff, var, averages, errors]
+        data_list.append(entry)
 
     return data_list, max_bound, min_bound
 
