@@ -4,7 +4,7 @@ import numpy as np
 import glob
 
 # values that can/should be changed
-file_path = "./good data/*.csv"
+file_path = "./good data lunar/*.csv"
 png_path = "plot_of_plots.png"
 
 def read_csv(file_path):
@@ -12,7 +12,7 @@ def read_csv(file_path):
     #bins = [[] for _ in range(100)]   # not to be confused with data binning, just a list to collect 100 data points across all of the same dbuff/var rows in a 2d grid
     data_list = []
     data = {}
-    first_row = True
+    entries = []
     max_bound = -np.inf
     min_bound = np.inf
     for f_in in glob.glob(file_path):
@@ -21,9 +21,13 @@ def read_csv(file_path):
 
             #process rows into dict
             for row in csv_reader:
+                #get key in consistant format
+                si = row[0].split('/')
+                key = f"{int(si[0])}/{float(si[1])}"
                 # Convert dbuff and var to floats
-                if row[0] not in data:
-                    data[row[0]] = [[] for _ in row[1:]]
+                if key not in data:
+                    data[key] = [[] for _ in row[1:]]
+                    entries.append([int(si[0]), float(si[1])])
 
                 #Extract values from the rest of the row
                 for i, val in enumerate(map(float, row[1:])):
@@ -33,14 +37,14 @@ def read_csv(file_path):
                     if min_bound > val:
                         min_bound = val
                     # Sort bins into list
-                    data[row[0]][i].append(val)
+                    data[key][i].append(val)
 
     #process stats
-    for key in data:
-        dbuff, var = map(float, key.split('/'))
-        averages = [np.mean(inner_list) for inner_list in data[key]]
+    for key in sorted(entries, key=lambda x: x[1]):
+        dbuff, var = key
+        averages = [np.mean(inner_list) for inner_list in data[f"{dbuff}/{var}"]]
         #use 95% confidence interval
-        errors = [1.96*np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in data[key]]
+        errors = [1.96*np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in data[f"{dbuff}/{var}"]]
 
         entry = [dbuff, var, averages, errors]
         data_list.append(entry)
