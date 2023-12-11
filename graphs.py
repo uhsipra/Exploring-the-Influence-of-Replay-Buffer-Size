@@ -18,13 +18,9 @@ def read_csv(file_path):
     for f_in in glob.glob(file_path):
         with open(f_in, newline='') as csvfile:
             csv_reader = csv.reader(csvfile)
-            total_rows = sum(1 for _ in csv_reader)  # Count total rows
-            
-            # Reset reader to the beginning
-            csvfile.seek(0)
 
             #process rows into dict
-            for row_num, row in enumerate(csv_reader, start=1):
+            for row in csv_reader:
                 # Convert dbuff and var to floats
                 if row[0] not in data:
                     data[row[0]] = [[] for _ in row[1:]]
