@@ -1,9 +1,10 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+import glob
 
 # values that can/should be changed
-file_path = "CartPole-v1-seed11-batch128.csv"
+file_path = "./good data/*.csv"
 png_path = "plot_of_plots.png"
 
 def read_csv(file_path):
@@ -13,53 +14,38 @@ def read_csv(file_path):
     first_row = True
     max_bound = -np.inf
     min_bound = np.inf
-    
-    with open(file_path, newline='') as csvfile:
-        csv_reader = csv.reader(csvfile)
-        total_rows = sum(1 for _ in csv_reader)  # Count total rows
-        
-        # Reset reader to the beginning
-        csvfile.seek(0)
-        
-        for row_num, row in enumerate(csv_reader, start=1):
-            # Convert dbuff and var to floats
-            dbuff, var = map(float, row[0].split('/'))
+    for f_in in glob.glob(file_path):
+        with open(f_in, newline='') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            total_rows = sum(1 for _ in csv_reader)  # Count total rows
             
-            key = (dbuff, var)
-            if key not in keys:
-                if not first_row:
-                    dbuff2, var2 = keys[-1]
-                    keys.append(key)
-                    
-                    averages = [np.mean(inner_list) for inner_list in bins]
-                    #use 95% confidence interval
-                    errors = [1.96*np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in bins]
+            # Reset reader to the beginning
+            csvfile.seek(0)
 
-                    entry = [dbuff2, var2, averages, errors]
-                    data_list.append(entry)
-                else:
-                    first_row = False
-                    keys.append(key)
-                bins = [[] for _ in range(len(row[1:]))]
-            
-            # Extract values from the rest of the row
-            values = [float(value) for value in row[1:]]
-            bin_num = 0
-            for val in values:
-                #find max and min bounds of the data, for graphs
-                if max_bound < val:
-                    max_bound = val
-                if min_bound > val:
-                    min_bound = val
-                # Sort bins into list
-                bins[bin_num].append(val)
-                bin_num += 1
-            
-            # Check if the current row is the last row
-            is_last_row = row_num == total_rows
-            if is_last_row:
-                averages = [np.mean(inner_list) for inner_list in bins]
-                errors = [1.96*np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in bins]
+            data = {}
+
+            #process rows into dict
+            for row_num, row in enumerate(csv_reader, start=1):
+                # Convert dbuff and var to floats
+                if row[0] not in data:
+                    data[row[0]] = [[] for _ in row[1:]]
+
+                #Extract values from the rest of the row
+                for i, val in enumerate(map(float, row[1:])):
+                    #find max and min bounds of the data, for graphs
+                    if max_bound < val:
+                        max_bound = val
+                    if min_bound > val:
+                        min_bound = val
+                    # Sort bins into list
+                    data[row[0]][i].append(val)
+
+            #process stats
+            for key in data:
+                dbuff, var = map(float, key.split('/'))
+                averages = [np.mean(inner_list) for inner_list in data[key]]
+                #use 95% confidence interval
+                errors = [1.96*np.std(inner_list, ddof=1) / np.sqrt(len(inner_list)) for inner_list in data[key]]
 
                 entry = [dbuff, var, averages, errors]
                 data_list.append(entry)
@@ -73,6 +59,7 @@ def unique_sizes(data_list):
 
 # Example usage:
 result_list, max_bound, min_bound = read_csv(file_path)
+#min_bound = 0
 #for i in result_list:
 #    print(i)
 # IMPORTANT:
