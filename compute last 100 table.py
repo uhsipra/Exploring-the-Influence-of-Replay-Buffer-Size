@@ -43,8 +43,8 @@ def read_csv(file_path):
     for key in sorted(entries, key=lambda x: x[1]):
         dbuff, var = key
         values = []
-        for inner_list in data[f"{dbuff}/{var}"]:
-            values.extend(inner_list[-10:])
+        for inner_list in data[f"{dbuff}/{var}"][-10:]:
+            values.extend(inner_list)
 
         entry = [dbuff, var, values]
         data_list.append(entry)
@@ -74,8 +74,16 @@ for i, entry in enumerate(result_list):
             perf_diff[dbuff][var] = sum(values)/len(values)
             perf_diff_error[dbuff][var] = 1.96*(np.std(values)/ np.sqrt(len(values)))
 
-# process data and output perfromance difference
+# process data and output perfromance difference in latex table format
+# raw perf
 for b in perf_diff:
-    print(f"RB {b}: \n  Baseline perf: {baseline[b]:.1f} - Baseline error: {baseline_error[b]:.1f}")
+    print(f"{b}   $&{baseline[b]:.1f}\pm{baseline_error[b]:.1f}$ ", end="")
     for v in perf_diff[b]:
-        print(f"  V:{v} - perf: {perf_diff[b][v]:.1f} - perf error: {perf_diff_error[b][v]:.1f} - perf diff: {100*(perf_diff[b][v] - baseline[b])/baseline[b]:.1f} - diff error: {100*(perf_diff_error[b][v] + baseline_error[b])/baseline[b]:.1f}")
+        print(f"&${perf_diff[b][v]:.1f}\pm{perf_diff_error[b][v]:.1f}$ ", end="")
+    print("\\\\")
+#perf change
+for b in perf_diff:
+    print(f"{b}   ", end="")
+    for v in perf_diff[b]:
+        print(f"&${100*(perf_diff[b][v] - baseline[b])/baseline[b]:.1f}\pm{100*(perf_diff_error[b][v] + baseline_error[b])/baseline[b]:.1f}$ ", end="")
+    print("\\\\")
