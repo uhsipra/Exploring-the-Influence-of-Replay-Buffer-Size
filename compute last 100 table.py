@@ -51,11 +51,6 @@ def read_csv(file_path):
 
     return data_list, max_bound, min_bound
 
-def unique_sizes(data_list):
-    unique_dbuff = set(entry[0] for entry in data_list)
-    unique_var = set(entry[1] for entry in data_list)
-    return len(unique_dbuff), len(unique_var)
-
 # Example usage:
 result_list, max_bound, min_bound = read_csv(file_path)
 min_bound = -250
@@ -81,5 +76,6 @@ for i, entry in enumerate(result_list):
 
 # process data and output perfromance difference
 for b in perf_diff:
+    print(f"RB {b}: \n  Baseline perf: {baseline[b]:.1f} - Baseline error: {baseline_error[b]:.1f}")
     for v in perf_diff[b]:
-        print(f"RB: {b} - V:{v} - perf diff: {100*(perf_diff[b][v] - baseline[b])/baseline[b]:.1f} - error: {100*(perf_diff_error[b][v] + baseline_error[b])/baseline[b]:.1f}")
+        print(f"  V:{v} - perf: {perf_diff[b][v]:.1f} - perf error: {perf_diff_error[b][v]:.1f} - perf diff: {100*(perf_diff[b][v] - baseline[b])/baseline[b]:.1f} - diff error: {100*(perf_diff_error[b][v] + baseline_error[b])/baseline[b]:.1f}")
