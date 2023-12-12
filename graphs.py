@@ -6,7 +6,7 @@ import glob
 # values that can/should be changed
 file_path = "./good data lunar/*.csv"
 png_path = "plot_of_plots.png"
-group_x = True
+group_x = False
 group_y = False
 
 def read_csv(file_path):
@@ -104,7 +104,7 @@ if type(axs) == np.ndarray:
             plot_label +=f"V: {var}"
 
 
-        x_values = range(1, len(values)*200 + 1, 200)
+        x_values = range(1, len(values)*500 + 1, 500)
         axs_flat[i].plot(x_values, values, label=line_label)   # can change colour by adding (color='gray') to this line
         axs_flat[i].fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.4, label=None)
         axs_flat[i].set_title(plot_label)
@@ -119,7 +119,7 @@ if type(axs) == np.ndarray:
 else:
     axs_flat = axs
     dbuff, var, values, errors = result_list[0]
-    x_values = range(1, len(values)*200 + 1, 200)
+    x_values = range(1, len(values)*500 + 1, 500)
     axs_flat.plot(x_values, values,label=f'dbuff={dbuff}, var={var}')   # can change colour by adding (color='gray') to this line
     axs_flat.fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.6, color='gray', label=None)
     axs_flat.set_title(f'dbuff={dbuff}, var={var}')
