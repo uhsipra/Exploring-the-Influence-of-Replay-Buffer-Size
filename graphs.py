@@ -6,6 +6,8 @@ import glob
 # values that can/should be changed
 file_path = "./good data lunar/*.csv"
 png_path = "plot_of_plots.png"
+group_x = True
+group_y = False
 
 def read_csv(file_path):
     keys = []   # each variation of dbuff/var is a key
@@ -58,18 +60,24 @@ def unique_sizes(data_list):
 
 # Example usage:
 result_list, max_bound, min_bound = read_csv(file_path)
-#min_bound = 0
-#for i in result_list:
-#    print(i)
-# IMPORTANT:
-# If you want to swap increasing x-axis and y-axis (dbuff vs var), uncomment line below
-# result_list = sorted(result_list, key=lambda x: (x[0], x[1]))
+min_bound = -250
 
 # Find the unique sizes for dbuff and var
-num_cols, num_rows = unique_sizes(result_list)
+data_num_cols, data_num_rows = unique_sizes(result_list)
+if group_x:
+    num_cols = 1
+else:
+    num_cols = data_num_cols
+if group_y:
+    num_rows = 1
+else:
+    num_rows = data_num_rows
 
 # Create a dynamic grid for subplots
-fig, axs = plt.subplots(num_rows, num_cols, figsize=(4 * num_cols, 4 * num_rows), constrained_layout=True)
+if group_x:
+    fig, axs = plt.subplots(1, num_rows, figsize=(4 * num_rows, 4 * num_cols), constrained_layout=True)
+else:
+    fig, axs = plt.subplots(num_rows, num_cols, figsize=(4 * num_cols, 4 * num_rows), constrained_layout=True)
 
 # Flatten the axs array for easier indexing
 if type(axs) == np.ndarray:
@@ -78,13 +86,32 @@ if type(axs) == np.ndarray:
     for i, entry in enumerate(result_list):
         # code for how each plot will be constructed
         dbuff, var, values, errors = entry
+        
+        #deal with grouped entries
+        plot_label = ""
+        line_label = ""
+        if group_x:
+            i //= data_num_cols
+            plot_label +="Replay Buffer: All - "
+            line_label +=f"RB: {dbuff}"
+        else:
+            plot_label +=f"Replay Buffer: {dbuff} - "
+        if group_y:
+            i %= data_num_rows
+            plot_label +="V: All"
+            line_label +=f"V: {var}"
+        else:
+            plot_label +=f"V: {var}"
+
+
         x_values = range(1, len(values)*200 + 1, 200)
-        axs_flat[i].plot(x_values, values, marker='o', label=f'dbuff={dbuff}, var={var}')   # can change colour by adding (color='gray') to this line
-        axs_flat[i].fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.6, color='gray', label=None)
-        axs_flat[i].set_title(f'dbuff={dbuff}, var={var}')
+        axs_flat[i].plot(x_values, values, label=line_label)   # can change colour by adding (color='gray') to this line
+        axs_flat[i].fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.4, label=None)
+        axs_flat[i].set_title(plot_label)
         axs_flat[i].set_xlabel(f'Time-Steps')
         axs_flat[i].set_ylabel('Rewards')
-        axs_flat[i].legend().set_visible(False)
+        if group_x or group_y:
+            axs_flat[i].legend().set_visible(True)
         axs_flat[i].set_ylim([min_bound, max_bound])
     # Hide empty subplots if any
     for i in range(len(result_list), len(axs_flat)):
@@ -93,7 +120,7 @@ else:
     axs_flat = axs
     dbuff, var, values, errors = result_list[0]
     x_values = range(1, len(values)*200 + 1, 200)
-    axs_flat.plot(x_values, values, marker='o', label=f'dbuff={dbuff}, var={var}')   # can change colour by adding (color='gray') to this line
+    axs_flat.plot(x_values, values,label=f'dbuff={dbuff}, var={var}')   # can change colour by adding (color='gray') to this line
     axs_flat.fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.6, color='gray', label=None)
     axs_flat.set_title(f'dbuff={dbuff}, var={var}')
     axs_flat.set_xlabel(f'Time-Steps')
@@ -103,4 +130,4 @@ else:
 
 # Adjust layout and save the figure to a PNG file
 plt.tight_layout()
-plt.savefig(png_path, bbox_inches='tight')
+plt.savefig(png_path, bbox_inches='tight', dpi=300)
