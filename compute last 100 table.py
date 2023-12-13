@@ -51,7 +51,17 @@ def read_csv(file_path):
 
     return data_list, max_bound, min_bound
 
-# Example usage:
+
+def compute_correlation(x, y):
+    x_mean = np.mean(x)
+    y_mean = np.mean(y)
+    x_var = ((x-x_mean)**2).sum()
+    y_var = ((y-y_mean)**2).sum()
+    upper = ((x-x_mean) * (y-y_mean)).sum()
+    lower = np.sqrt(x_var * y_var)
+    return upper/lower
+
+
 result_list, max_bound, min_bound = read_csv(file_path)
 min_bound = -250
 
@@ -77,13 +87,22 @@ for i, entry in enumerate(result_list):
 # process data and output perfromance difference in latex table format
 # raw perf
 for b in perf_diff:
-    print(f"{b}   $&{baseline[b]:.1f}\pm{baseline_error[b]:.1f}$ ", end="")
+    print(f"{b} &${baseline[b]:.1f}\pm{baseline_error[b]:.1f}$ ", end="")
     for v in perf_diff[b]:
         print(f"&${perf_diff[b][v]:.1f}\pm{perf_diff_error[b][v]:.1f}$ ", end="")
     print("\\\\")
 #perf change
+var_vals = set()
+perf_vals = {dbs:[] for dbs in perf_diff}
 for b in perf_diff:
-    print(f"{b}   ", end="")
+    print(f"{b} ", end="")
     for v in perf_diff[b]:
+        var_vals.add(v)
         print(f"&${100*(perf_diff[b][v] - baseline[b])/baseline[b]:.1f}\pm{100*(perf_diff_error[b][v] + baseline_error[b])/baseline[b]:.1f}$ ", end="")
     print("\\\\")
+#rb correlation
+for v in var_vals:
+    perf_vals = []
+    for b in perf_diff:
+        perf_vals.append(100*(perf_diff[b][v] - baseline[b])/baseline[b])
+    print(f"&${compute_correlation(np.array(list(perf_diff.keys())), np.array(perf_vals)):.1f}$ ", end="")
