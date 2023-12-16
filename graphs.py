@@ -4,10 +4,11 @@ import numpy as np
 import glob
 
 # values that can/should be changed
-file_path = "./good data lunar/*.csv"
-png_path = "plot_of_plots.png"
+file_path = "./fl/*.csv"
+png_path = "squish_variance_fl.png"
+timesteps_per_sample = 100
 group_x = False
-group_y = False
+group_y = True
 
 def read_csv(file_path):
     keys = []   # each variation of dbuff/var is a key
@@ -25,6 +26,8 @@ def read_csv(file_path):
             for row in csv_reader:
                 #get key in consistant format
                 si = row[0].split('/')
+                if int(si[0]) > 50000:
+                    continue
                 key = f"{int(si[0])}/{float(si[1])}"
                 # Convert dbuff and var to floats
                 if key not in data:
@@ -60,7 +63,8 @@ def unique_sizes(data_list):
 
 # Example usage:
 result_list, max_bound, min_bound = read_csv(file_path)
-min_bound = -250
+#min_bound=-250
+max_bound = 0.4
 
 # Find the unique sizes for dbuff and var
 data_num_cols, data_num_rows = unique_sizes(result_list)
@@ -97,14 +101,14 @@ if type(axs) == np.ndarray:
         else:
             plot_label +=f"Replay Buffer: {dbuff} - "
         if group_y:
-            i %= data_num_rows
+            i %= data_num_cols
             plot_label +="V: All"
             line_label +=f"V: {var}"
         else:
             plot_label +=f"V: {var}"
 
 
-        x_values = range(1, len(values)*500 + 1, 500)
+        x_values = range(1, len(values)*timesteps_per_sample + 1, timesteps_per_sample)
         axs_flat[i].plot(x_values, values, label=line_label)   # can change colour by adding (color='gray') to this line
         axs_flat[i].fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.4, label=None)
         axs_flat[i].set_title(plot_label)
@@ -119,7 +123,7 @@ if type(axs) == np.ndarray:
 else:
     axs_flat = axs
     dbuff, var, values, errors = result_list[0]
-    x_values = range(1, len(values)*500 + 1, 500)
+    x_values = range(1, len(values)*timesteps_per_sample + 1, timesteps_per_sample)
     axs_flat.plot(x_values, values,label=f'dbuff={dbuff}, var={var}')   # can change colour by adding (color='gray') to this line
     axs_flat.fill_between(x_values, np.array(values) - np.array(errors), np.array(values) + np.array(errors), alpha=0.6, color='gray', label=None)
     axs_flat.set_title(f'dbuff={dbuff}, var={var}')

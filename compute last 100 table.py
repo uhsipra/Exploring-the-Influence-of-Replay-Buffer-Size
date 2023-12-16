@@ -4,7 +4,7 @@ import numpy as np
 import glob
 
 # values that can/should be changed
-file_path = "./good data lunar/*.csv"
+file_path = "./fl/*.csv"
 png_path = "plot_of_plots.png"
 
 def read_csv(file_path):
@@ -23,6 +23,8 @@ def read_csv(file_path):
             for row in csv_reader:
                 #get key in consistant format
                 si = row[0].split('/')
+                if int(si[0]) > 50000:
+                    continue
                 key = f"{int(si[0])}/{float(si[1])}"
                 # Convert dbuff and var to floats
                 if key not in data:
@@ -87,9 +89,9 @@ for i, entry in enumerate(result_list):
 # process data and output perfromance difference in latex table format
 # raw perf
 for b in perf_diff:
-    print(f"{b} &${baseline[b]:.1f}\pm{baseline_error[b]:.1f}$ ", end="")
+    print(f"{b} &$\\num{{{baseline[b]:.2e}}}\\pm\\num{{{baseline_error[b]:.2e}}}$ ", end="")
     for v in perf_diff[b]:
-        print(f"&${perf_diff[b][v]:.1f}\pm{perf_diff_error[b][v]:.1f}$ ", end="")
+        print(f"&$\\num{{{perf_diff[b][v]:.2e}}}\\pm\\num{{{perf_diff_error[b][v]:.2e}}}$ ", end="")
     print("\\\\")
 #perf change
 var_vals = set()
@@ -98,7 +100,7 @@ for b in perf_diff:
     print(f"{b} ", end="")
     for v in perf_diff[b]:
         var_vals.add(v)
-        print(f"&${100*(perf_diff[b][v] - baseline[b])/baseline[b]:.1f}\pm{100*(perf_diff_error[b][v] + baseline_error[b])/baseline[b]:.1f}$ ", end="")
+        print(f"&${100*(perf_diff[b][v] - baseline[b])/baseline[b]:.1f}\\pm{100*(perf_diff_error[b][v] + baseline_error[b])/baseline[b]:.1f}$ ", end="")
     print("\\\\")
 #rb correlation
 for v in var_vals:
