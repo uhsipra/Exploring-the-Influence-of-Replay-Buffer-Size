@@ -1,6 +1,3 @@
-# CMPUT655 Final Project
-Final project for CMPUT 655
-
 ## GitHub Content
 The file structure of the artifact is as follow:
 * **07_n_step_learning_*.ipynb:** Notebook to test individual configurations and plot the loss and cumulative reward during learning in real time
